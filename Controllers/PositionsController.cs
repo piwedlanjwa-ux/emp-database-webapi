@@ -8,17 +8,15 @@ using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 using System.Data;
 using WebAPI.Models;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
 
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeeController : ControllerBase
+    public class PositionsController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public EmployeeController(IConfiguration configuration)
+        public PositionsController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -26,7 +24,7 @@ namespace WebAPI.Controllers
         [HttpGet]
         public JsonResult Get()
         {
-            string query = @"select EmployeeId, FirstName, LastName, Department, JobTitle, EmailAddress from dbo.Employee";
+            string query = @"select PositionId, PositionName, Department from dbo.Positions";
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
             SqlDataReader myReader;
@@ -46,9 +44,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
-        public JsonResult Post(Employee emp)
+        public JsonResult Post(Positions pos)
         {
-            string query = @"insert into dbo.Employee values('" + emp.FirstName + @"', '" + emp.LastName + @"', '" + emp.Department + @"', '" + emp.JobTitle + @"', '" + emp.EmailAddress + @"')";
+            string query = @"insert into dbo.Positions values('" + pos.PositionName + @"', '" + pos.Department + @"')";
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
             SqlDataReader myReader;
@@ -68,9 +66,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut]
-        public JsonResult Put(Employee emp)
+        public JsonResult Put(Positions pos)
         {
-            string query = @"update dbo.Employee set FirstName = '" + emp.FirstName + @"', Department = '" + emp.Department + @"', JobTitle = '" + emp.JobTitle + @"', EmailAddress = '" + emp.EmailAddress + @"' where EmployeeId = " + emp.EmployeeId + @"";
+            string query = @"update dbo.Positions set PositionName = '" + pos.PositionName + @"', Department = '" + pos.Department + @"' where PositionId = " + pos.PositionId + @"";
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
             SqlDataReader myReader;
@@ -80,7 +78,7 @@ namespace WebAPI.Controllers
                 using (SqlCommand myCommand = new SqlCommand(query, myCon))
                 {
                     myReader = myCommand.ExecuteReader();
-                    table.Load(myReader); 
+                    table.Load(myReader); ;
 
                     myReader.Close();
                     myCon.Close();
@@ -92,8 +90,7 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public JsonResult Delete(int id)
         {
-            string query = @"delete from dbo.Employee 
-            where EmployeeId = " + id + @"";
+            string query = @"delete from dbo.Position where PositionId = " + id + @"";
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
             SqlDataReader myReader;
@@ -110,53 +107,6 @@ namespace WebAPI.Controllers
                 }
             }
             return new JsonResult("Deleted Successfully");
-        }
-        [Route("SaveFile")]
-        [HttpPost]
-
-        
-        [Route("GetAllDepartmentName")]
-        public JsonResult GetAllDepartmentNames()
-        {
-            string query = @"select DepartmentName from dbo.Department";
-            DataTable table = new DataTable();
-            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
-            SqlDataReader myReader;
-            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
-            {
-                myCon.Open();
-                using (SqlCommand myCommand = new SqlCommand(query, myCon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader); ;
-
-                    myReader.Close();
-                    myCon.Close();
-                }
-            }
-            return new JsonResult(table);
-        }
-
-        [Route("GetAllPositionNames")]
-        public JsonResult GetAllPositionNames()
-        {
-            string query = @"select PositionName from dbo.Positions";
-            DataTable table = new DataTable();
-            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
-            SqlDataReader myReader;
-            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
-            {
-                myCon.Open();
-                using (SqlCommand myCommand = new SqlCommand(query, myCon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader); ;
-
-                    myReader.Close();
-                    myCon.Close();
-                }
-            }
-            return new JsonResult(table);
         }
     }
 }
